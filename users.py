@@ -1,8 +1,9 @@
+import datetime
 import json
 
 
-class user:
-    def __init__(self, username: str, password: str, gender: str, bdate: str, type: int):
+class User:
+    def __init__(self, username: str, password: str, gender: str, bdate: list, type: str):
         self.username = username
         self.password = password
         self.gender = gender
@@ -10,32 +11,52 @@ class user:
         self.type = type
 
 
-class users:
+class Users:
     def __init__(self):
         self.p = {}
 
-    def newuser(self, user: user):
+    def newuser(self, user: User):
+        self.load_from_json()
+        if user.username=="":
+            return False, "Please Input Username."
+        if user.password=="":
+            return False, "Please Input Password."
+        if user.gender is None:
+            return False, "Please Choose Gender."
+        if user.bdate is None:
+            return False, "Please Choose Birth Date."
+        if user.type is None:
+            return False, "Please Choose Your Type."
         if user.username in self.p.keys():
-            return False, "Username exists"
+            return False, "Username Exists."
         if len(user.password) < 5:
-            return False, "password too short."
+            return False, "Password Too Short."
         if len(user.username) < 5:
-            return False, "username too short."
+            return False, "Username Too Short."
         for c in user.username:
             if not c.isalpha() and not c.isnumeric() and not c in "_-.":
-                return False, "illegal username."
+                return False, "Illegal Username."
         for c in user.password:
             if not c.isalpha() and not c.isnumeric() and not c in "_-.":
-                return False, "illegal password."
+                return False, "Illegal Password."
+        # t= int (datetime.date.today().year)
+        # d,m,y=user.bdate
+        # print(t-y)
+        # if t-y<16:
+        #     return False,"You Are Under Age 16"
+        # if t-y>120:
+        #     return False,"Birth Dath Not Sense."
+
         self.p[user.username] = user
         self.save_to_json(user)
         self.load_from_json()
         return True, f'Welcome {user.username}!'
 
     def chekcpass(self, username: str, password: str):
+        self.load_from_json()
         if username not in self.p.keys():
             return False, "Username not exist!"
-        if self.p[username] != password:
+        if self.p[username][1] != password:
             return False, "Wrong password!"
         return True, f'Welcome {username}!'
 
@@ -45,7 +66,7 @@ class users:
             return True
         return False
 
-    def save_to_json(self, user:user, file_name="users.json"):
+    def save_to_json(self, user:User, file_name="users.json"):
         j = {}
         with open(file_name) as f:
             j = json.load(f)
