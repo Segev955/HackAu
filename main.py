@@ -1,12 +1,11 @@
-import datetime
+
 import tkinter.messagebox
-import urllib
+
 import webbrowser
 from tkinter import *
 from tkcalendar import Calendar
 
-import GuestGui
-import HostGui
+
 from users import *
 
 u = Users()
@@ -42,6 +41,8 @@ def singup(screen,username: str, password: str, gender: str, bdate, type: int):
 
 
 def login(screen,username, password):
+    print(username)
+    print(password)
     f, msg = u.chekcpass(username=username, password=password)
     if f:
         tkinter.messagebox.showinfo(message=msg)
@@ -51,9 +52,9 @@ def login(screen,username, password):
 def open_user_win(window,user):
     window.destroy()
     if user.type == "Host":
-        HostGui.host_screen(user)
+        host_screen(user)
     else:
-        GuestGui.guest_screen(user)
+        guest_screen(user)
 
 def create_menu_bar(window):
     menubar= Menu(window)
@@ -73,7 +74,7 @@ def create_menu_bar(window):
     window.config(menu=menubar)
 
 def register(window=None):
-    reg_screen = Tk()
+    reg_screen = Toplevel(home_screen)
     reg_screen.title("Register")
     reg_screen.geometry("300x500")
     if window is not None:
@@ -103,11 +104,11 @@ def register(window=None):
 
 
     Button(reg_screen, text="Sign Up", width=30, height=2,
-           command=lambda: singup(reg_screen,username.get(),password.get(),getGender(gender.get()),date_from_str(cal.get_date()),getType(type.get())) in ()).place(relx=0.15,rely=0.9)
+           command=lambda: singup(screen=reg_screen,username=username.get(),password=password.get(),gender=getGender(gender.get()),bdate=date_from_str(cal.get_date()),type=getType(type.get())) in ()).place(relx=0.15,rely=0.9)
 
 
 def connect(window=None):
-    log_screen = Tk()
+    log_screen = Toplevel(home_screen)
     log_screen.title("Login")
     log_screen.geometry("300x250")
     if window is not None:
@@ -124,10 +125,22 @@ def connect(window=None):
     Label(log_screen, text="Password: ").pack()
     Entry(log_screen, textvariable=password, show="*").pack()
     Label(log_screen, text=" ").pack()
-    Button(log_screen, text="Login", width=30, height=2, command=lambda: login(log_screen,username.get(), password.get())).pack()
+    Button(log_screen, text="Login", width=30, height=2, command=lambda: login(screen=log_screen,username=username.get(),password= password.get())).pack()
 
+def guest_screen(user: User):
+    screen = Toplevel(home_screen)
+    screen.geometry("300x250")
+    screen.title(f"Guest {user.username}")
+    create_menu_bar(screen)
+
+def host_screen(user:User):
+    screen = Toplevel(home_screen)
+    screen.geometry("300x250")
+    screen.title(f"Host {user.username}")
+    create_menu_bar(screen)
 
 def home_page(window=None):
+    global home_screen
     home_screen = Tk()
     home_screen.title("Home Page")
     home_screen.geometry("300x250")

@@ -53,7 +53,13 @@ class Users:
         return True, f'Welcome {user.username}!'
 
     def chekcpass(self, username: str, password: str):
+        print(username)
         self.load_from_json()
+        print(self.p)
+        if username=="":
+            return False, "Please Input Username."
+        if password=="":
+            return False, "Please Input Password."
         if username not in self.p.keys():
             return False, "Username not exist!"
         if self.p[username][1] != password:
