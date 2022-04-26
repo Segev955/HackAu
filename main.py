@@ -1,3 +1,4 @@
+import os
 import tkinter.messagebox
 
 import webbrowser
@@ -121,6 +122,7 @@ def register(window=None):
     reg_screen = Toplevel(home_screen)
     reg_screen.title("Register")
     reg_screen.geometry("300x500")
+    reg_screen.iconbitmap(os.path.join('icon', 'register.ico'))
     if window is not None:
         window.destroy()
     create_menu_bar(reg_screen)
@@ -177,6 +179,7 @@ def connect(window=None):
     log_screen = Toplevel(home_screen)
     log_screen.title("Login")
     log_screen.geometry("300x250")
+    log_screen.iconbitmap(os.path.join('icon', 'login.ico'))
     if window is not None:
         window.destroy()
     create_menu_bar(log_screen)
@@ -214,6 +217,7 @@ def home_page(window=None):
     home_screen = Tk()
     home_screen.title("Home Page")
     home_screen.geometry("300x250")
+    home_screen.iconbitmap(os.path.join('icon', 'meal.ico'))
     if window is not None:
         window.destroy()
     # create_menu_bar(home_screen)
