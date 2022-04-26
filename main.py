@@ -11,6 +11,9 @@ from calendar import month_name
 from users import *
 
 u = Users()
+day_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17',
+            '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
+month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
 
 def date_from_str(date: str, spliter='/') -> tuple:
@@ -98,7 +101,23 @@ def create_menu_bar(window):
     window.config(menu=menubar)
 
 
+# def select(event):
+#     print(monthl.get())
+# if monthl.get() == month_list[1]:
+#     print("feb")
+
 def register(window=None):
+    def select(event):
+        if monthl.get() == '02':
+            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list[:28])
+        elif monthl.get() == ('04' or '06' or '09' or '11'):
+            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list[:30])
+        else:
+            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list)
+        day.set("Day")
+        dayl.config(width=15)
+        dayl.place(relx=0.25, rely=0.41)
+
     reg_screen = Toplevel(home_screen)
     reg_screen.title("Register")
     reg_screen.geometry("300x500")
@@ -123,36 +142,35 @@ def register(window=None):
     Radiobutton(reg_screen, text="female", variable=gender, value=1).place(relx=0.25, rely=0.25)
     Radiobutton(reg_screen, text="other", variable=gender, value=2).place(relx=0.25, rely=0.3)
     Label(reg_screen, text="Date of birth: ").place(relx=0.0, rely=0.35)
-    day_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17',
-                '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-    month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-    dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list)
-    day.set("Day")
-    dayl.config(width=15)
-    dayl.place(relx=0.25, rely=0.35)
+
+    # Month:
     monthl = ttk.Combobox(reg_screen, textvariable=month, values=month_list)
     # monthl['values'] = [month_name[m][0:3] for m in range(1, 13)]
     # monthl['state'] = 'readonly'
     month.set("Month")
     monthl.config(width=15)
-    monthl.place(relx=0.25, rely=0.41)
+    monthl.place(relx=0.25, rely=0.35)
+    monthl.bind('<<ComboboxSelected>>', select)
+    # Day:
+    dayl = ttk.Combobox(reg_screen, textvariable=day)
+    day.set("Day")
+    dayl.config(width=15)
+    dayl.place(relx=0.25, rely=0.41)
+    # Year:
     year_now = dt.date.today().year
-    year_list = list(range(year_now - 100, year_now + 1))
+    year_list = list(range(year_now - 100, year_now))
     yearl = ttk.Combobox(reg_screen, textvariable=year, values=year_list)
     year.set("Year")
     yearl.config(width=15)
     yearl.place(relx=0.25, rely=0.47)
-    # m, y, d = date_from_str(str(datetime.date.today()), '-')
-    # cal = Calendar(reg_screen, year=y, month=m, day=d)
-    # cal.place(relx=0.0, rely=0.4)
-    Radiobutton(reg_screen, text="Host", variable=type, value=0).place(relx=0.0, rely=0.8)
-    Radiobutton(reg_screen, text="Guest", variable=type, value=1).place(relx=0.2, rely=0.8)
-    dayl.set("Day")
+
+    Radiobutton(reg_screen, text="Host", variable=type, value=0).place(relx=0.0, rely=0.6)
+    Radiobutton(reg_screen, text="Guest", variable=type, value=1).place(relx=0.2, rely=0.6)
     Button(reg_screen, text="Sign Up", width=30, height=2,
            command=lambda: singup(screen=reg_screen, username=username.get(), password=password.get(),
                                   gender=getGender(gender.get()),
                                   bdate=(day.get(), month.get(), year.get()),
-                                  type=getType(type.get())) in ()).place(relx=0.15, rely=0.9)
+                                  type=getType(type.get())) in ()).place(relx=0.15, rely=0.7)
 
 
 def connect(window=None):
