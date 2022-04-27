@@ -7,8 +7,17 @@ class User:
         self.username = username
         self.password = password
         self.gender = gender
-        self.bdate = bdate
+        self.bdate = (bdate[2],bdate[1],bdate[0])
         self.type = type
+
+
+    def getPass(self):
+        return self.password
+
+    def __repr__(self):
+        return f"password: {self.password}, Birth Date: {self.bdate[0]}/{self.bdate[1]}/{self.bdate[2]}, User Type: {self.type}."
+    def __str__(self):
+        return f"{self.type} User {self.username}:\nBirth Date: {self.bdate[0]}/{self.bdate[1]}/{self.bdate[2]}\ngender: {self.gender}\n"
 
 
 class Users:
@@ -18,15 +27,21 @@ class Users:
     def newuser(self, user: User):
         self.load_from_json()
         if user.username=="":
-            return False, "Please Input Username."
+            return False, "Please input Username."
         if user.password=="":
-            return False, "Please Input Password."
+            return False, "Please input Password."
         if user.gender is None:
-            return False, "Please Choose Gender."
+            return False, "Please choose Gender."
         if user.bdate is None:
-            return False, "Please Choose Birth Date."
+            return False, "Please choose Birth Date."
+        if user.bdate[0]==-1:
+                return False, "Please choose Year."
+        if user.bdate[1]==-1:
+                return False, "Please choose Month."
+        if user.bdate[2]==-1:
+                return False, "Please choose Day."
         if user.type is None:
-            return False, "Please Choose Your Type."
+            return False, "Please choose Your Type."
         if user.username in self.p.keys():
             return False, "Username Exists."
         if len(user.password) < 5:
@@ -39,13 +54,6 @@ class Users:
         for c in user.password:
             if not c.isalpha() and not c.isnumeric() and not c in "_-.":
                 return False, "Illegal Password."
-        # t= int (datetime.date.today().year)
-        # d,m,y=user.bdate
-        # print(t-y)
-        # if t-y<16:
-        #     return False,"You Are Under Age 16"
-        # if t-y>120:
-        #     return False,"Birth Dath Not Sense."
 
         self.p[user.username] = user
         self.save_to_json(user)
@@ -62,7 +70,7 @@ class Users:
             return False, "Please Input Password."
         if username not in self.p.keys():
             return False, "Username not exist!"
-        if self.p[username][1] != password:
+        if self.p[username].getPass() != password:
             return False, "Wrong password!"
         return True, f'Welcome {username}!'
 
@@ -73,7 +81,6 @@ class Users:
         return False
 
     def save_to_json(self, user:User, file_name="users.json"):
-        j = {}
         with open(file_name) as f:
             j = json.load(f)
         j[user.username] = (user.username,user.password,user.gender, user.bdate, user.type)
@@ -82,4 +89,6 @@ class Users:
 
     def load_from_json(self, file_name="users.json"):
         with open(file_name) as f:
-            self.p = json.load(f)
+            dict = json.load(f)
+            for name, user in dict.items():
+                self.p[name]=User(user[0],user[1],user[2],user[3],user[4])

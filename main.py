@@ -1,20 +1,14 @@
 import os
 import tkinter.messagebox
-
-import webbrowser
 from tkinter import *
 from tkinter import ttk
-
-from tkcalendar import Calendar
 import datetime as dt
-from calendar import month_name
+import webbrowser
+
 
 from users import *
 
 u = Users()
-day_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17',
-            '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
-month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
 
 def date_from_str(date: str, spliter='/') -> tuple:
@@ -23,36 +17,37 @@ def date_from_str(date: str, spliter='/') -> tuple:
     tup = (int(date.split(spliter)[1]), int(date.split(spliter)[0]), int(date.split(spliter)[2]))
     return tup
 
+def date_from_strvars(day,month,year) -> tuple:
+    d,m,y=(-1,-1,-1)
+    try:
+        d = day.get()
+    except:
+        pass
+    try:
+        m = month.get()
+    except:
+        pass
+    try:
+        y = year.get()
+    except:
+        pass
+    return (d,m,y)
 
 def getGender(g: int):
     if g == 0:
         return "male"
     elif g == 1:
         return "female"
-    elif g == 2:
+    else:
         return "other"
-    # match (g):
-    #     case 0:
-    #         return "male"
-    #     case 1:
-    #         return "female"
-    #     case 2:
-    #         return "other"
-
 
 def getType(t: int):
     if t == 0:
         return "Host"
-    elif t == 1:
+    else:
         return "Guest"
-    # match (t):
-    #     case 0:
-    #         return "Host"
-    #     case 1:
-    #         return "Guest"
 
-
-def singup(screen, username: str, password: str, gender: str, bdate: tuple, type: int):
+def singup(screen, username: str, password: str, gender: str, bdate: tuple, type: str):
     user = User(username=username, password=password, gender=gender, bdate=bdate, type=type)
     f, msg = u.newuser(user)
     if f:
@@ -61,67 +56,69 @@ def singup(screen, username: str, password: str, gender: str, bdate: tuple, type
     else:
         tkinter.messagebox.showerror(message=msg)
 
-
 def login(screen, username, password):
-    print(username)
-    print(password)
     f, msg = u.chekcpass(username=username, password=password)
     if f:
         tkinter.messagebox.showinfo(message=msg)
-        open_user_win(screen,
-                      User(username=username, password=password, gender=u.p[username][2], bdate=u.p[username][3],
-                           type=u.p[username][4]))
+        open_user_win(screen,username)
     else:
         tkinter.messagebox.showerror(message=msg)
 
-
-def open_user_win(window, user):
-    window.destroy()
-    if user.type == "Host":
-        host_screen(user)
-    else:
-        guest_screen(user)
-
-
 def create_menu_bar(window):
     menubar = Menu(window)
-    # homemenu = Menu(menubar, tearoff=0)
-    # homemenu.add_command(label="Home Page", command=lambda: homemenu())
-    # menubar.add_cascade(label="Home", menu=homemenu)
     usermenu = Menu(menubar, tearoff=0)
     usermenu.add_command(label="Login", command=lambda: connect(window))
     usermenu.add_command(label="Sign Up", command=lambda: register(window))
-    # usermenu.add_command(label="Save", command=pass)
     usermenu.add_separator()
     usermenu.add_command(label="Exit", command=lambda: window.destroy())
     menubar.add_cascade(label="User", menu=usermenu)
     helpmenu = Menu(menubar, tearoff=0)
-    helpmenu.add_command(label="About...",
-                         command=lambda: webbrowser.open('https://github.com/Segev955/HackAu/blob/main/README.md'))
+    helpmenu.add_command(label="About...",command=lambda: webbrowser.open('https://github.com/Segev955/HackAu/blob/main/README.md'))
     menubar.add_cascade(label="Help", menu=helpmenu)
     window.config(menu=menubar)
 
-
-# def select(event):
-#     print(monthl.get())
-# if monthl.get() == month_list[1]:
-#     print("feb")
-
-def register(window=None):
+def DatePicker(window,day,month,year,relx=0.25, rely=0.65,space=0.25):
+    day_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17',
+                '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31']
+    month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     def select(event):
         if monthl.get() == '02':
-            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list[:28])
+            if yearl.get() != 'Year' and int(yearl.get()) % 4 == 0:
+                dayl = ttk.Combobox(window, textvariable=day, values=day_list[:29])
+            else:
+                dayl = ttk.Combobox(window, textvariable=day, values=day_list[:28])
         elif monthl.get() == ('04' or '06' or '09' or '11'):
-            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list[:30])
+            dayl = ttk.Combobox(window, textvariable=day, values=day_list[:30])
         else:
-            dayl = ttk.Combobox(reg_screen, textvariable=day, values=day_list)
+            dayl = ttk.Combobox(window, textvariable=day, values=day_list)
         day.set("Day")
-        dayl.config(width=15)
-        dayl.place(relx=0.25, rely=0.41)
+        dayl.config(width=5)
+        dayl.place(relx=0.75, rely=rely)
+    # Month:
+    monthl = ttk.Combobox(window, textvariable=month, values=month_list)
+    month.set("Month")
+    monthl.config(width=7)
+    monthl.place(relx=relx+space, rely=rely)
+    monthl.bind('<<ComboboxSelected>>', select)
+    # Day:
+    dayl = ttk.Combobox(window, textvariable=day)
+    day.set("Day")
+    dayl.config(width=5)
+    dayl.place(relx=relx+2*space, rely=rely)
+    # Year:
+    year_now = dt.date.today().year
+    year_list = list(range(year_now - 100, year_now))
+    year_list.reverse()
+    yearl = ttk.Combobox(window, textvariable=year, values=year_list)
+    year.set("Year")
+    yearl.config(width=7)
+    yearl.place(relx=relx, rely=rely)
+    yearl.bind('<<ComboboxSelected>>', select)
 
+def register(window=None):
     reg_screen = Toplevel(home_screen)
     reg_screen.title("Register")
-    reg_screen.geometry("300x500")
+    reg_screen.geometry("300x250")
     reg_screen.iconbitmap(os.path.join('icon', 'register.ico'))
     if window is not None:
         window.destroy()
@@ -130,50 +127,33 @@ def register(window=None):
     username = StringVar()
     password = StringVar()
     gender = IntVar()
-    type = IntVar()
+    typevar = IntVar()
     day = IntVar()
     month = IntVar()
     year = IntVar()
-    Label(reg_screen, text="Register Form", font=(18)).place(relx=0.3, rely=0.01)
-    Label(reg_screen, text="Username: ").place(relx=0, rely=0.1)
-    Entry(reg_screen, textvariable=username).place(relx=0.25, rely=0.1)
-    Label(reg_screen, text="Password: ").place(relx=0.0, rely=0.15)
-    Entry(reg_screen, textvariable=password, show="*").place(relx=0.25, rely=0.15)
-    Label(reg_screen, text="Gender: ").place(relx=0.0, rely=0.25)
-    Radiobutton(reg_screen, text="male", variable=gender, value=0).place(relx=0.25, rely=0.2)
-    Radiobutton(reg_screen, text="female", variable=gender, value=1).place(relx=0.25, rely=0.25)
-    Radiobutton(reg_screen, text="other", variable=gender, value=2).place(relx=0.25, rely=0.3)
-    Label(reg_screen, text="Date of birth: ").place(relx=0.0, rely=0.35)
 
-    # Month:
-    monthl = ttk.Combobox(reg_screen, textvariable=month, values=month_list)
-    # monthl['values'] = [month_name[m][0:3] for m in range(1, 13)]
-    # monthl['state'] = 'readonly'
-    month.set("Month")
-    monthl.config(width=15)
-    monthl.place(relx=0.25, rely=0.35)
-    monthl.bind('<<ComboboxSelected>>', select)
-    # Day:
-    dayl = ttk.Combobox(reg_screen, textvariable=day)
-    day.set("Day")
-    dayl.config(width=15)
-    dayl.place(relx=0.25, rely=0.41)
-    # Year:
-    year_now = dt.date.today().year
-    year_list = list(range(year_now - 100, year_now))
-    yearl = ttk.Combobox(reg_screen, textvariable=year, values=year_list)
-    year.set("Year")
-    yearl.config(width=15)
-    yearl.place(relx=0.25, rely=0.47)
 
-    Radiobutton(reg_screen, text="Host", variable=type, value=0).place(relx=0.0, rely=0.6)
-    Radiobutton(reg_screen, text="Guest", variable=type, value=1).place(relx=0.2, rely=0.6)
-    Button(reg_screen, text="Sign Up", width=30, height=2,
+    Label(reg_screen, text="Register Form", font=(18)).place(relx=0.3, rely=0.05)
+    Label(reg_screen, text="Username: ").place(relx=0, rely=0.2)
+    Entry(reg_screen, textvariable=username).place(relx=0.25, rely=0.2)
+    Label(reg_screen, text="Password: ").place(relx=0.0, rely=0.3)
+    Entry(reg_screen, textvariable=password, show="*").place(relx=0.25, rely=0.3)
+    Label(reg_screen, text="Gender: ").place(relx=0.0, rely=0.45)
+    Radiobutton(reg_screen, text="male", variable=gender, value=0).place(relx=0.25, rely=0.4)
+    Radiobutton(reg_screen, text="female", variable=gender, value=1).place(relx=0.25, rely=0.5)
+    Radiobutton(reg_screen, text="other", variable=gender, value=2).place(relx=0.5, rely=0.45)
+
+    Label(reg_screen, text="Date of birth: ").place(relx=0.0, rely=0.65)
+    DatePicker(reg_screen, day, month, year)
+
+    Radiobutton(reg_screen, text="Host", variable=typevar, value=0).place(relx=0.0, rely=0.8)
+    Radiobutton(reg_screen, text="Guest", variable=typevar, value=1).place(relx=0.2, rely=0.8)
+
+    Button(reg_screen, text="Sign Up", width=10, height=2,
            command=lambda: singup(screen=reg_screen, username=username.get(), password=password.get(),
-                                  gender=getGender(gender.get()),
-                                  bdate=(day.get(), month.get(), year.get()),
-                                  type=getType(type.get())) in ()).place(relx=0.15, rely=0.7)
-
+                   gender=getGender(gender.get()),
+                   bdate=date_from_strvars(day,month,year),
+                   type=getType(typevar.get())) in ()).place(relx=0.4, rely=0.75)
 
 def connect(window=None):
     log_screen = Toplevel(home_screen)
@@ -197,19 +177,28 @@ def connect(window=None):
     Button(log_screen, text="Login", width=30, height=2,
            command=lambda: login(log_screen, username.get(), password.get())).pack()
 
+def open_user_win(window, username):
+    window.destroy()
+    if u.p[username].type == "Host":
+        host_screen(u.p[username])
+    else:
+        guest_screen(u.p[username])
 
 def guest_screen(user: User):
     screen = Toplevel(home_screen)
     screen.geometry("300x250")
     screen.title(f"Guest {user.username}")
     create_menu_bar(screen)
-
+    Label(screen, text=user).pack()
 
 def host_screen(user: User):
     screen = Toplevel(home_screen)
     screen.geometry("300x250")
     screen.title(f"Host {user.username}")
     create_menu_bar(screen)
+    Label(screen, text=user).pack()
+
+
 
 
 def home_page(window=None):
@@ -230,6 +219,4 @@ def home_page(window=None):
     Button(text="Register", width=30, height=2, command=lambda: register()).pack()
 
     home_screen.mainloop()
-
-
 home_page()
