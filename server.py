@@ -1,7 +1,7 @@
 from datetime import time
 from socket import *
 from threading import Thread
-
+import time
 from users import *
 
 # GLOBAL CONSTANTS
@@ -21,20 +21,26 @@ SERVER.bind(ADDR)
 
 
 class Online:
-    def __init__(self, addr, sock, name=""):
+    global counter
+    counter=0
+    def __init__(self, addr, sock, name=f"online{counter}"):
         self.addr = addr
         self.sock = sock
         self.name = name
 
-    def set_name(self, name):
+    def set_name(self, name:str):
         self.name = name
     def __repr__(self) -> str:
         return self.name
 
 
 def date_from_str(date: str, spliter='/') -> tuple:
-    tup = (int(date.split(spliter)[1]), int(date.split(spliter)[0]), int(date.split(spliter)[2]))
-    return tup
+    lst=[]
+    lst.append(int(date.split(spliter)[1]))
+    lst.append(int(date.split(spliter)[0]))
+    lst.append(int(date.split(spliter)[2]))
+    tup = [int(date.split(spliter)[1]), int(date.split(spliter)[0]), int(date.split(spliter)[2])]
+    return lst
 
 
 def broadcast(msg):
@@ -47,7 +53,7 @@ def broadcast(msg):
     for online in onlines:
         sock = online.sock
         try:
-            sock.send(msg)
+            sock.send(bytes(msg, "utf8"))
         except Exception as e:
             print("[EXCEPTION]", e)
 
@@ -62,52 +68,80 @@ def sendto(msg, name):
         if online.name == name:
             sock = online.sock
             try:
-                sock.send(msg)
+                sock.send(bytes(f"{msg}", "utf8"))
             except Exception as e:
                 print("[EXCEPTION]", e)
 
 
-
-
+def get_online_index(name):
+    for i in range(len(onlines)):
+        if onlines[i].name==name:
+            return i
+    return None
+def rename_client(online:Online,newname:str):
+    sendto(f"RENAME,{newname}", online.name)
+    time.sleep(0.1)
+    onlines.pop(get_online_index(online.name))
+    online.name=newname
+    onlines.append(online)
+    # oldonline=get_online(oldname)
+    # newonline=Online(oldonline.addr,oldonline.sock,newname)
+    # onlines.remove(oldonline)
+    # onlines.append(newonline)
 def client_communication(online: Online):
     """
     Thread to handle all messages from client
     :param person: Person
     :return: None
     """
-    client = online.sock
+
 
     # first message received is always the persons name
-    name = client.recv(BUFSIZ).decode("utf8")
-    online.set_name(name)
-
-    msg = bytes(f"{name} has joined the chat!", "utf8")
-    broadcast(msg, "")  # broadcast welcome message
-
+    onlines.append(online)
+    name = f"CLIENT~{len(onlines)}"
+    rename_client(online,name)
+    msg = f"{onlines[get_online_index(name)].name} has connected to the Server!"
+    broadcast(msg)  # broadcast welcome message
+    print(f"Online users: {onlines}")
+    client = onlines[get_online_index(name)].sock
     while True:  # wait for any messages from person
-        msg = client.recv(BUFSIZ)
+        msg = client.recv(BUFSIZ).decode("utf8")
+        # time.sleep(1)
+        sp=[]
+        try:
+            sp = msg.split(',')
+        except:
+            break
 
-        if msg == bytes("{quit}", "utf8"):  # if message is qut - so disconnect the client
+        if msg == "{quit}":  # if message is qut - so disconnect the client
             onlines.remove(online)
-            print(onlines)
-        elif name == "HOME":
-            if msg.split()[0] == "NEWUSER":
-                user = User(username=msg.split()[1], password=msg.split()[2], gender=msg.split()[3], bdate=date_from_str(msg.split()[4]), type=msg.split()[5])
-                f, msg = u.newuser(user)
-                sendto(f"NEWUSER,{f},{msg}","HOME")
+            print(f"Online users: {onlines}")
 
-            elif msg.split()[0] == "CHECKTYPE":
-                for i in u.p.values():
-                    if msg.split()[1]== i.username:
-                        if msg.split[2]== i.type():
-                            sendto(f"CHECKTYPE,true", "HOME")
-                        else:
-                            sendto(f"CHECKTYPE,false", "HOME")
-                        break
-            else:
-                sendto(f"unknown message to home.", "HOME")
+        elif sp[0] == "NEWUSER":
+            user = User(username=sp[1], password=sp[2], gender=sp[3], bdate=date_from_str(sp[4], '.'), type=sp[5])
+            f, msg = u.newuser(user)
+            sendto(f"NEWUSER,{f},{msg}", online.name)
+        elif sp[0] == "CHECKTYPE":
+            for i in u.p.values():
+                if sp[1] == i.username:
+                    if i.type == 'Host':
+                        sendto(f"TYPE,{i.username},HOST", online.name)
+                    else:
+                        sendto(f"TYPE,{i.username},GUEST", online.name)
+                    break
+        elif sp[0] == "CHECKPASS":
+            f, msg = u.chekcpass(sp[1], sp[2])
+            sendto(f"CHECKPASS,{f},{msg}", online.name)
+        elif sp[0] == "RENAME":
+            rename_client(onlines[get_online_index(sp[1])],sp[2])
+
+        elif msg == "USERTOSTRING":
+            if online.name in u.p.keys():
+                sendto(f"USERTOSTRING,{u.p[online]}",online.name)
+
+
         else:
-            broadcast("unknown message.")
+            print(f"Unknown Message: {msg}")
 
 
 def wait_for_connection():
@@ -119,10 +153,9 @@ def wait_for_connection():
         try:
             sock, addr = SERVER.accept()  # wait for any new connections
             online = Online(addr, sock)  # create new person for connection
-            onlines.append(online)
-            print(onlines)
 
-            print(f"[CONNECTION] {addr} connected to the server at {time.time()}")
+            now= datetime.datetime.now().strftime("%H:%M:%S")
+            print(f"[CONNECTION] {addr} connected to the server at {now}")
             Thread(target=client_communication, args=(online,)).start()
         except Exception as e:
             print("[EXCEPTION]", e)
