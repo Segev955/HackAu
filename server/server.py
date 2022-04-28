@@ -73,6 +73,7 @@ def sendto(msg, name):
                 print("[EXCEPTION]", e)
 
 
+
 def get_online_index(name):
     for i in range(len(onlines)):
         if onlines[i].name==name:
@@ -80,7 +81,7 @@ def get_online_index(name):
     return None
 def rename_client(online:Online,newname:str):
     sendto(f"RENAME,{newname}", online.name)
-    time.sleep(0.1)
+    # time.sleep(0.1)
     onlines.pop(get_online_index(online.name))
     online.name=newname
     onlines.append(online)

@@ -20,19 +20,33 @@ class Client:
         :param name: str
         """
         self.name=name
-
-        # open tcp socket for client
-        self.client_socket = socket(AF_INET, SOCK_STREAM)
-        self.client_socket.connect(self.ADDR)
-        self.messages = ["messages:"]
+        self.isconnected=False
+        tcp_thread = Thread(target=self.tcp_connection)
+        tcp_thread.start()
 
 
-        # sends name of client to the server
-        self.send_message("New Client Connected Successfully.")
-        print(f"Connected to the Server with Client name {name}")
-        receive_thread = Thread(target=self.receive_messages)
-        receive_thread.start()
         # self.lock = Lock()
+
+    def tcp_connection(self):
+        while True:
+            if not self.isconnected:
+                try:
+
+                    # open tcp socket for client
+                    self.client_socket = socket(AF_INET, SOCK_STREAM)
+                    self.client_socket.connect(self.ADDR)
+                    self.messages = ["messages:"]
+                    self.isconnected = True
+                    receive_thread = Thread(target=self.receive_messages)
+                    receive_thread.start()
+
+                    # sends name of client to the server
+                    self.send_message("New Client Connected Successfully.")
+                    print(f"Connected to the Server with Client name {self.name}")
+
+                except:
+                    pass
+
 
 
     def acceptUser(self,flag,msg):
@@ -43,27 +57,28 @@ class Client:
         :return: None
         """
         while True:
-            try:
-                msg = self.client_socket.recv(self.BUFSIZ).decode('utf-8')
-                sp=[]
-                print(f"{self.name} received message: {msg}")
+            if self.isconnected:
                 try:
-                    sp=msg.split(',')
-                    if sp[0] =="RENAME":
-                        self.name=sp[1]
-                        print(f"Client Name changed to {self.name}")
-                except:
+                    msg = self.client_socket.recv(self.BUFSIZ).decode('utf-8')
+                    sp=[]
+                    print(f"{self.name} received message: {msg}")
+                    try:
+                        sp=msg.split(',')
+                        if sp[0] =="RENAME":
+                            self.name=sp[1]
+                            print(f"Client Name changed to {self.name}")
+                    except:
+                        pass
+
+                    # make sure memory is safe to access
+                    # self.lock.acquire()
+                    self.messages.append(msg)
+                    # self.lock.release()
+                except Exception as e:
+                    print("[EXCPETION]", e)
                     pass
 
-
-                # make sure memory is safe to access
-                # self.lock.acquire()
-                self.messages.append(msg)
-                # self.lock.release()
-            except Exception as e:
-                print("[EXCPETION]", e)
-
-                break
+                    break
 
     def send_message(self, msg):
         """
@@ -73,8 +88,10 @@ class Client:
         """
         try:
             self.client_socket.send(bytes(f"{msg}", "utf8"))
+            return True
         except Exception as e:
-            print(e)
+            self.disconnect()
+            return False
 
     def get_messages(self):
         """
@@ -85,13 +102,17 @@ class Client:
 
         # make sure memory is safe to access
         # self.lock.acquire()
-        self.messages = []
+        # self.messages = []
         # self.lock.release()
 
         return messages_copy
 
     def disconnect(self):
-        self.send_message("{quit}")
+        try:
+            self.send_message("{quit}")
+        except:
+            print("The Server is crushed.")
+        self.isconnected=False
         self.client_socket.close()
 
 # cl=Client("HOME")
