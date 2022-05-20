@@ -103,13 +103,19 @@ def exit_win(window):
     window.destroy()
     sys.exit()
 
-
+def bg_photo(filename:str,size,screen):
+    global img
+    img = Image.open(filename)
+    img_resized = img.resize(size)
+    img = ImageTk.PhotoImage(img_resized)
+    b2 = Label(screen, image=img)  # using Button
+    b2.place(x=0, y=0)
 def create_menu_bar(window):
     menubar = Menu(window)
     usermenu = Menu(menubar, tearoff=0)
     usermenu.add_command(label="Login", command=lambda: connect())
     usermenu.add_command(label="Sign Up", command=lambda: register())
-    usermenu.add_command(label="Dinner", command=lambda: dinner())
+    # usermenu.add_command(label="Dinner", command=lambda: dinner())
     usermenu.add_separator()
     usermenu.add_command(label="Exit", command=lambda: exit_win(window))
     menubar.add_cascade(label="User", menu=usermenu)
@@ -278,10 +284,19 @@ def dinner():
     destroy_elements(elements)
     WIN.title("Dinner")
     WIN.geometry("450x650")
+
+
     WIN.iconbitmap(os.path.join('icon', 'meal.ico'))
     create_menu_bar(WIN)
-
+    # bg = Image.open("icon/bg.png")
+    # bg_resized = bg.resize((450, 650))
+    # bg = ImageTk.PhotoImage(bg_resized)
+    #
+    # print(bg)
+    # l1 = Label(WIN, image=bg)
+    # l1.place(x=0, y=0)
     # Var:
+    bg_photo('icon/bg.png',(450,650), WIN)
     day = IntVar()
     month = IntVar()
     year = IntVar()
@@ -340,7 +355,7 @@ def open_user_win(username: str):
         CLIENT.send_message(f"RENAME,{CLIENT.name},{username}")
     except:
         return (False, "unalbe to connect the Server.")
-    if checkType(username) == "Host":
+    if checkType(username) == "HOST":
         host_screen()
     else:
         guest_screen()
@@ -367,6 +382,8 @@ def host_screen():
     WIN.title(f"Host {CLIENT.name}")
     create_menu_bar(WIN)
     elements.append(Label(WIN, text=f"Welcome {CLIENT.name}", bg="gray", width=300, height=1, font=("Calibri", 13)))
+    elements[-1].pack()
+    elements.append(Button(text="create new meal",command=lambda: dinner()))
     elements[-1].pack()
     # CLIENT.send_message('USERTOSTRING')
     # msg = CLIENT.get_messages()
