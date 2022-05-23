@@ -14,6 +14,7 @@ from client import Client
 
 CLIENT = Client()
 
+
 def date_from_str(date: str, spliter='/') -> tuple:
     if date is None or len(date.split(spliter)) != 3: return None
     tup = (int(date.split(spliter)[1]), int(date.split(spliter)[0]), int(date.split(spliter)[2]))
@@ -35,6 +36,19 @@ def date_from_strvars(day, month, year) -> tuple:
     except:
         pass
     return (d, m, y)
+
+
+def time_from(minute, hour) -> tuple:
+    m, h = (-1, -1)
+    try:
+        m = minute.get()
+    except:
+        pass
+    try:
+        h = hour.get()
+    except:
+        pass
+    return (m, h)
 
 
 def getGender(g: int):
@@ -98,18 +112,39 @@ def login(username, password):
         tkinter.messagebox.showerror(message=msg)
 
 
+def check_meal(title: str, date: tuple, mtime: tuple, address: str, kosher: int, details, capacity):
+    if not CLIENT.send_message(f"NEWMEAL,{title},{date},{mtime},{address},{kosher},{capacity},{details}"):
+        return False, "unalbe to connect the Server."
+    msg = CLIENT.get_messages()
+    while len(msg) == 0 or msg[-1].split(',')[0] != 'NEWMEAL':
+        msg = CLIENT.get_messages()
+    return msg[-1].split(',')[1] == 'True', msg[-1].split(',')[2]
+
+
+def submit_meal(title: str, date, mtime, address: str, kosher: int, details, capacity):
+    f, msg = check_meal(title,  f"{date[0]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details, capacity)
+    if f:
+        tkinter.messagebox.showinfo(message=msg)
+        open_user_win(CLIENT.name)
+    else:
+        tkinter.messagebox.showerror(message=msg)
+
+
 def exit_win(window):
     CLIENT.disconnect()
     window.destroy()
     sys.exit()
 
-def bg_photo(filename:str,size,screen):
+
+def bg_photo(filename: str, size, screen):
     global img
     img = Image.open(filename)
     img_resized = img.resize(size)
     img = ImageTk.PhotoImage(img_resized)
-    elements.append(Label(screen, image=img))  # using Button
-    elements[-1].place(x=0, y=0)
+    b2 = Label(screen, image=img)  # using Button
+    b2.place(x=0, y=0)
+
+
 def create_menu_bar(window):
     menubar = Menu(window)
     usermenu = Menu(menubar, tearoff=0)
@@ -176,7 +211,7 @@ def DatePicker(window, day, month, year, relx, rely, space, x):
 def register():
     destroy_elements(elements)
     WIN.title("Register")
-    WIN.geometry("450x370")
+    WIN.geometry("450x250")
     bg_photo('icon/bg.png', (450, 370), WIN)
     WIN.iconbitmap(os.path.join('icon', 'register.ico'))
     create_menu_bar(WIN)
@@ -189,7 +224,7 @@ def register():
     month = IntVar()
     year = IntVar()
 
-    elements.append(Label(WIN, text="Register Form", bg="white", width=300, height=1, font=("Calibri", 13)))
+    elements.append(Label(WIN, text="Register Form", bg="gray", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
     elements[-1].place(relx=0, rely=0.2)
@@ -202,14 +237,14 @@ def register():
     elements.append(Label(WIN, text="Gender: "))
     elements[-1].place(relx=0.0, rely=0.45)
     elements.append(Radiobutton(WIN, text="male", variable=gender, value=0))
-    elements[-1].place(relx=0.15, rely=0.45)
+    elements[-1].place(relx=0.1, rely=0.4)
     elements.append(Radiobutton(WIN, text="female", variable=gender, value=1))
-    elements[-1].place(relx=0.15, rely=0.55)
+    elements[-1].place(relx=0.1, rely=0.5)
     elements.append(Radiobutton(WIN, text="other", variable=gender, value=2))
-    elements[-1].place(relx=0.35, rely=0.45)
+    elements[-1].place(relx=0.25, rely=0.45)
     elements.append(Label(WIN, text="Date of birth: "))
-    elements[-1].place(relx=0.0, rely=0.67)
-    elements.append(DatePicker(WIN, day, month, year, 0.32, 0.67, 0.25, 0.3))
+    elements[-1].place(relx=0.0, rely=0.65)
+    elements.append(DatePicker(WIN, day, month, year, 0.25, 0.65, 0.25, 1))
     elements.append(Radiobutton(WIN, text="Host", variable=typevar, value=0))
     elements[-1].place(relx=0.0, rely=0.8)
     elements.append(Radiobutton(WIN, text="Guest", variable=typevar, value=1))
@@ -219,21 +254,22 @@ def register():
                                                   gender=getGender(gender.get()),
                                                   bdate=date_from_strvars(day, month, year),
                                                   type=getType(typevar.get())) in ()))
-    elements[-1].place(relx=0.45, rely=0.9)
+    elements[-1].place(relx=0.3, rely=0.75)
 
 
 def connect():
     destroy_elements(elements)
     WIN.title("Login")
     WIN.geometry("450x130")
+    bg_photo('icon/bg.png', (450, 130), WIN)
     WIN.iconbitmap(os.path.join('icon', 'login.ico'))
     create_menu_bar(WIN)
-    bg_photo('icon/bg.png',(450,130), WIN)
+
     username = StringVar()
     password = StringVar()
 
-    elements.append(Label(WIN, text="Log in Form", bg="white", width=300, height=1,
-                          font=("Calibri", 15)))
+    elements.append(Label(WIN, text="Log in Form", bg="gray", width=300, height=1,
+                          font=("Calibri", 13)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
     elements[-1].place(relx=0, rely=0.4)
@@ -286,7 +322,6 @@ def dinner():
     WIN.title("Dinner")
     WIN.geometry("450x650")
 
-
     WIN.iconbitmap(os.path.join('icon', 'meal.ico'))
     create_menu_bar(WIN)
     # bg = Image.open("icon/bg.png")
@@ -298,19 +333,20 @@ def dinner():
     # l1.place(x=0, y=0)
     # Var:
     bg_photo('icon/table_plates_cuttlery.jpg',(500,700), WIN)
+    title = StringVar()
     day = IntVar()
     month = IntVar()
     year = IntVar()
     minute = IntVar()
     hour = IntVar()
-    title = StringVar()
     address = StringVar()
     kosher = IntVar()
+    capacity = IntVar()
     details = StringVar()
 
     # Elements:
-    elements.append(Label(WIN, text="Submit dinner", bg="white", width=300, height=1,
-                          font=("Calibri", 15)))
+    elements.append(Label(WIN, text="Submit dinner", bg="gray", width=300, height=1,
+                          font=("Calibri", 13)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Title: "))
     elements[-1].place(relx=0.0, rely=0.05)
@@ -326,21 +362,22 @@ def dinner():
     elements[-1].place(relx=0.0, rely=0.20)
     elements.append(Entry(WIN, textvariable=address))
     elements[-1].place(relx=0.2, rely=0.20)
-    elements.append(Label(WIN, text="Guests Amount: "))
+    elements.append(Label(WIN, text="Capacity: "))
     elements[-1].place(relx=0.0, rely=0.25)
-    elements.append(Spinbox(WIN, from_=1, to=100, width=3))
-    elements[-1].place(relx=0.2, rely=0.25)
-    elements.append(Label(WIN, text="Kashrut: "))
-    elements[-1].place(relx=0.0, rely=0.29)
-    radio_default=Radiobutton(WIN, text="Kosher", variable=kosher, value=0)
-    elements.append(radio_default)
-    elements[-1].place(relx=0.2, rely=0.30)
-    elements.append(Radiobutton(WIN, text="Not Kosher", variable=kosher, value=1))
-    elements[-1].place(relx=0.2, rely=0.35)
-    elements.append(Radiobutton(WIN, text="Kosher Rabanut", variable=kosher, value=2))
-    elements[-1].place(relx=0.4, rely=0.30)
-    elements.append(Radiobutton(WIN, text="Kosher Mehadrin", variable=kosher, value=3))
-    elements[-1].place(relx=0.4, rely=0.35)
+    sbox = Spinbox(WIN, from_=1, to=100, width=3)
+    elements.append(sbox)
+    sbox.place(relx=0.2, rely=0.25)
+
+    elements.append(Label(WIN, text="Kosher: "))
+    elements[-1].place(relx=0.0, rely=0.32)
+    elements.append(Radiobutton(WIN, text="Kosher", variable=kosher, value=0))
+    elements[-1].place(relx=0.1, rely=0.30)
+    elements.append(Radiobutton(WIN, text="None", variable=kosher, value=1))
+    elements[-1].place(relx=0.1, rely=0.35)
+    elements.append(Radiobutton(WIN, text="Kosher rabanut", variable=kosher, value=2))
+    elements[-1].place(relx=0.25, rely=0.30)
+    elements.append(Radiobutton(WIN, text="Kosher mehadrin", variable=kosher, value=3))
+    elements[-1].place(relx=0.25, rely=0.35)
     elements.append(Button(WIN, text="Upload image", command=lambda: upload_file()))
     elements[-1].place(relx=0.0, rely=0.43)
     elements.append(Label(WIN, text="Details: "))
@@ -348,10 +385,19 @@ def dinner():
     text = Text(WIN, height=8, width=45)
     elements.append(text)
     elements[-1].place(relx=0.15, rely=0.50)
-    details = elements[-1].get("1.0", "end")
-    elements.append(Button(WIN, text="Submit", width=10, height=2))
+
+    elements.append(
+        Button(WIN, text="Submit", width=10, height=2,
+               command=lambda: submit_meal(title=title.get(),
+                                           date=date_from_strvars(day, month, year),
+                                           mtime=time_from(minute, hour),
+                                           address=address.get(),
+                                           details=text.get("1.0", "end"),
+                                           capacity=sbox.get(),
+                                           kosher=kosher.get())))
+
     elements[-1].place(relx=0.4, rely=0.80)
-    kosher.set(0)
+
 
 def open_user_win(username: str):
     try:
@@ -386,7 +432,7 @@ def host_screen():
     create_menu_bar(WIN)
     elements.append(Label(WIN, text=f"Welcome {CLIENT.name}", bg="gray", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
-    elements.append(Button(text="create new meal",command=lambda: dinner()))
+    elements.append(Button(text="create new meal", command=lambda: dinner()))
     elements[-1].pack()
     # CLIENT.send_message('USERTOSTRING')
     # msg = CLIENT.get_messages()
@@ -410,11 +456,10 @@ def destroy_elements(elements):
 
 
 def isClientConnected(window, label, relx=0, rely=0, relwidth=0.1):
-    while (True):
+    while True:
         if CLIENT.isconnected:
             l = Label(window, text="online", bg="green", width=350, height=1, font=("Calibri", 13)).place(relx=relx,
-                                                                                                          rely=rely,
-                                                                                                          relwidth=relwidth)
+                                                                                                          rely=rely,                                                                                                relwidth=relwidth)
         else:
             l = Label(window, text="offline", bg="red", width=350, height=1, font=("Calibri", 13)).place(relx=relx,
                                                                                                          rely=rely,
@@ -429,10 +474,9 @@ def home_page(window=None):
     WIN.title("Home Page")
     WIN.geometry("450x250")
     WIN.iconbitmap(os.path.join('icon', 'meal.ico'))
-    bg_photo('icon/bg.png',(450,250), WIN)
     if window is not None:
         window.destroy()
-    elements.append(Label(WIN, text="Welcome to our hackton project!", bg="white", width=300, height=1,
+    elements.append(Label(WIN, text="Welcome to our hackton project!", bg="gray", width=300, height=1,
                           font=("Calibri", 13)))
     elements[-1].pack()
     l = Label()

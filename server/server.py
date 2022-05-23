@@ -3,6 +3,7 @@ from socket import *
 from threading import Thread
 import time
 from users import *
+from objects import Meal, Meals
 
 # GLOBAL CONSTANTS
 HOST = ''
@@ -13,6 +14,7 @@ BUFSIZ = 1024
 
 # GLOBAL VARIABLES
 u = Users()
+m=Meals()
 onlines = []
 
 # set up server
@@ -22,24 +24,36 @@ SERVER.bind(ADDR)
 
 class Online:
     global counter
-    counter=0
+    counter = 0
+
     def __init__(self, addr, sock, name=f"online{counter}"):
         self.addr = addr
         self.sock = sock
         self.name = name
 
-    def set_name(self, name:str):
+    def set_name(self, name: str):
         self.name = name
+
     def __repr__(self) -> str:
         return self.name
 
 
 def date_from_str(date: str, spliter='/') -> tuple:
-    lst=[]
+    lst = []
+    print(date)
     lst.append(int(date.split(spliter)[1]))
     lst.append(int(date.split(spliter)[0]))
     lst.append(int(date.split(spliter)[2]))
     tup = [int(date.split(spliter)[1]), int(date.split(spliter)[0]), int(date.split(spliter)[2])]
+    return lst
+
+
+def time_from_str(time: str, spliter='/') -> tuple:
+    lst = []
+    print(time)
+    lst.append(int(time.split(spliter)[1]))
+    lst.append(int(time.split(spliter)[0]))
+    tup = [int(time.split(spliter)[1]), int(time.split(spliter)[0])]
     return lst
 
 
@@ -57,6 +71,7 @@ def broadcast(msg):
         except Exception as e:
             print("[EXCEPTION]", e)
 
+
 def sendto(msg, name):
     """
     send new messages to all clients
@@ -73,22 +88,25 @@ def sendto(msg, name):
                 print("[EXCEPTION]", e)
 
 
-
 def get_online_index(name):
     for i in range(len(onlines)):
-        if onlines[i].name==name:
+        if onlines[i].name == name:
             return i
     return None
-def rename_client(online:Online,newname:str):
+
+
+def rename_client(online: Online, newname: str):
     sendto(f"RENAME,{newname}", online.name)
     # time.sleep(0.1)
     onlines.pop(get_online_index(online.name))
-    online.name=newname
+    online.name = newname
     onlines.append(online)
     # oldonline=get_online(oldname)
     # newonline=Online(oldonline.addr,oldonline.sock,newname)
     # onlines.remove(oldonline)
     # onlines.append(newonline)
+
+
 def client_communication(online: Online):
     """
     Thread to handle all messages from client
@@ -96,11 +114,10 @@ def client_communication(online: Online):
     :return: None
     """
 
-
     # first message received is always the persons name
     onlines.append(online)
     name = f"CLIENT~{len(onlines)}"
-    rename_client(online,name)
+    rename_client(online, name)
     msg = f"{onlines[get_online_index(name)].name} has connected to the Server!"
     broadcast(msg)  # broadcast welcome message
     print(f"Online users: {onlines}")
@@ -108,7 +125,7 @@ def client_communication(online: Online):
     while True:  # wait for any messages from person
         msg = client.recv(BUFSIZ).decode("utf8")
         # time.sleep(1)
-        sp=[]
+        sp = []
         try:
             sp = msg.split(',')
         except:
@@ -130,16 +147,28 @@ def client_communication(online: Online):
                     else:
                         sendto(f"TYPE,{i.username},GUEST", online.name)
                     break
+        elif sp[0] == "NEWMEAL":
+            meal = Meal(host=online.name, title=sp[1], date=date_from_str(sp[2], '.'), time=time_from_str(sp[3],'.'), address=sp[4],
+                        kosher=sp[5], capacity=sp[6], details=sp[7])
+            f, msg = m.newmeal(meal)
+            sendto(f"NEWMEAL,{f},{msg}", online.name)
+        elif sp[0] == "CHECKTYPE":
+            for i in u.p.values():
+                if sp[1] == i.username:
+                    if i.type == 'Host':
+                        sendto(f"TYPE,{i.username},HOST", online.name)
+                    else:
+                        sendto(f"TYPE,{i.username},GUEST", online.name)
+                    break
         elif sp[0] == "CHECKPASS":
             f, msg = u.chekcpass(sp[1], sp[2])
             sendto(f"CHECKPASS,{f},{msg}", online.name)
         elif sp[0] == "RENAME":
-            rename_client(onlines[get_online_index(sp[1])],sp[2])
+            rename_client(onlines[get_online_index(sp[1])], sp[2])
 
         elif msg == "USERTOSTRING":
             if online.name in u.p.keys():
-                sendto(f"USERTOSTRING,{u.p[online]}",online.name)
-
+                sendto(f"USERTOSTRING,{u.p[online]}", online.name)
 
         else:
             print(f"Unknown Message: {msg}")
@@ -155,7 +184,7 @@ def wait_for_connection():
             sock, addr = SERVER.accept()  # wait for any new connections
             online = Online(addr, sock)  # create new person for connection
 
-            now= datetime.datetime.now().strftime("%H:%M:%S")
+            now = datetime.datetime.now().strftime("%H:%M:%S")
             print(f"[CONNECTION] {addr} connected to the server at {now}")
             Thread(target=client_communication, args=(online,)).start()
         except Exception as e:
@@ -176,4 +205,6 @@ def start_server():
 
 def stop_server():
     SERVER.close()
+
+
 start_server()

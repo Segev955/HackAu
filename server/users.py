@@ -10,6 +10,7 @@ class User:
         self.bdate = (bdate[2], bdate[1], bdate[0])
         self.type = type
 
+
     def getPass(self):
         return self.password
 
