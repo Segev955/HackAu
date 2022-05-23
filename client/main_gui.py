@@ -108,14 +108,14 @@ def bg_photo(filename:str,size,screen):
     img = Image.open(filename)
     img_resized = img.resize(size)
     img = ImageTk.PhotoImage(img_resized)
-    b2 = Label(screen, image=img)  # using Button
-    b2.place(x=0, y=0)
+    elements.append(Label(screen, image=img))  # using Button
+    elements[-1].place(x=0, y=0)
 def create_menu_bar(window):
     menubar = Menu(window)
     usermenu = Menu(menubar, tearoff=0)
     usermenu.add_command(label="Login", command=lambda: connect())
     usermenu.add_command(label="Sign Up", command=lambda: register())
-    # usermenu.add_command(label="Dinner", command=lambda: dinner())
+    usermenu.add_command(label="Dinner", command=lambda: dinner())
     usermenu.add_separator()
     usermenu.add_command(label="Exit", command=lambda: exit_win(window))
     menubar.add_cascade(label="User", menu=usermenu)
@@ -176,7 +176,8 @@ def DatePicker(window, day, month, year, relx, rely, space, x):
 def register():
     destroy_elements(elements)
     WIN.title("Register")
-    WIN.geometry("450x250")
+    WIN.geometry("450x370")
+    bg_photo('icon/bg.png', (450, 370), WIN)
     WIN.iconbitmap(os.path.join('icon', 'register.ico'))
     create_menu_bar(WIN)
 
@@ -188,7 +189,7 @@ def register():
     month = IntVar()
     year = IntVar()
 
-    elements.append(Label(WIN, text="Register Form", bg="gray", width=300, height=1, font=("Calibri", 13)))
+    elements.append(Label(WIN, text="Register Form", bg="white", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
     elements[-1].place(relx=0, rely=0.2)
@@ -201,14 +202,14 @@ def register():
     elements.append(Label(WIN, text="Gender: "))
     elements[-1].place(relx=0.0, rely=0.45)
     elements.append(Radiobutton(WIN, text="male", variable=gender, value=0))
-    elements[-1].place(relx=0.1, rely=0.4)
+    elements[-1].place(relx=0.15, rely=0.45)
     elements.append(Radiobutton(WIN, text="female", variable=gender, value=1))
-    elements[-1].place(relx=0.1, rely=0.5)
+    elements[-1].place(relx=0.15, rely=0.55)
     elements.append(Radiobutton(WIN, text="other", variable=gender, value=2))
-    elements[-1].place(relx=0.25, rely=0.45)
+    elements[-1].place(relx=0.35, rely=0.45)
     elements.append(Label(WIN, text="Date of birth: "))
-    elements[-1].place(relx=0.0, rely=0.65)
-    elements.append(DatePicker(WIN, day, month, year, 0.25, 0.65, 0.25, 1))
+    elements[-1].place(relx=0.0, rely=0.67)
+    elements.append(DatePicker(WIN, day, month, year, 0.32, 0.67, 0.25, 0.3))
     elements.append(Radiobutton(WIN, text="Host", variable=typevar, value=0))
     elements[-1].place(relx=0.0, rely=0.8)
     elements.append(Radiobutton(WIN, text="Guest", variable=typevar, value=1))
@@ -218,7 +219,7 @@ def register():
                                                   gender=getGender(gender.get()),
                                                   bdate=date_from_strvars(day, month, year),
                                                   type=getType(typevar.get())) in ()))
-    elements[-1].place(relx=0.3, rely=0.75)
+    elements[-1].place(relx=0.45, rely=0.9)
 
 
 def connect():
@@ -227,12 +228,12 @@ def connect():
     WIN.geometry("450x130")
     WIN.iconbitmap(os.path.join('icon', 'login.ico'))
     create_menu_bar(WIN)
-
+    bg_photo('icon/bg.png',(450,130), WIN)
     username = StringVar()
     password = StringVar()
 
-    elements.append(Label(WIN, text="Log in Form", bg="gray", width=300, height=1,
-                          font=("Calibri", 13)))
+    elements.append(Label(WIN, text="Log in Form", bg="white", width=300, height=1,
+                          font=("Calibri", 15)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
     elements[-1].place(relx=0, rely=0.4)
@@ -296,23 +297,24 @@ def dinner():
     # l1 = Label(WIN, image=bg)
     # l1.place(x=0, y=0)
     # Var:
-    bg_photo('icon/bg.png',(450,650), WIN)
+    bg_photo('icon/table_plates_cuttlery.jpg',(500,700), WIN)
     day = IntVar()
     month = IntVar()
     year = IntVar()
     minute = IntVar()
     hour = IntVar()
+    title = StringVar()
     address = StringVar()
     kosher = IntVar()
     details = StringVar()
 
     # Elements:
-    elements.append(Label(WIN, text="Submit dinner", bg="gray", width=300, height=1,
-                          font=("Calibri", 13)))
+    elements.append(Label(WIN, text="Submit dinner", bg="white", width=300, height=1,
+                          font=("Calibri", 15)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Title: "))
     elements[-1].place(relx=0.0, rely=0.05)
-    elements.append(Entry(WIN, textvariable=address))
+    elements.append(Entry(WIN, textvariable=title))
     elements[-1].place(relx=0.2, rely=0.05)
     elements.append(Label(WIN, text="Date: "))
     elements[-1].place(relx=0.0, rely=0.10)
@@ -324,20 +326,21 @@ def dinner():
     elements[-1].place(relx=0.0, rely=0.20)
     elements.append(Entry(WIN, textvariable=address))
     elements[-1].place(relx=0.2, rely=0.20)
-    elements.append(Label(WIN, text="Capacity: "))
+    elements.append(Label(WIN, text="Guests Amount: "))
     elements[-1].place(relx=0.0, rely=0.25)
     elements.append(Spinbox(WIN, from_=1, to=100, width=3))
     elements[-1].place(relx=0.2, rely=0.25)
-    elements.append(Label(WIN, text="Kosher: "))
-    elements[-1].place(relx=0.0, rely=0.32)
-    elements.append(Radiobutton(WIN, text="Kosher", variable=kosher, value=0))
-    elements[-1].place(relx=0.1, rely=0.30)
-    elements.append(Radiobutton(WIN, text="None", variable=kosher, value=1))
-    elements[-1].place(relx=0.1, rely=0.35)
-    elements.append(Radiobutton(WIN, text="Kosher rabanut", variable=kosher, value=2))
-    elements[-1].place(relx=0.25, rely=0.30)
-    elements.append(Radiobutton(WIN, text="Kosher mehadrin", variable=kosher, value=3))
-    elements[-1].place(relx=0.25, rely=0.35)
+    elements.append(Label(WIN, text="Kashrut: "))
+    elements[-1].place(relx=0.0, rely=0.29)
+    radio_default=Radiobutton(WIN, text="Kosher", variable=kosher, value=0)
+    elements.append(radio_default)
+    elements[-1].place(relx=0.2, rely=0.30)
+    elements.append(Radiobutton(WIN, text="Not Kosher", variable=kosher, value=1))
+    elements[-1].place(relx=0.2, rely=0.35)
+    elements.append(Radiobutton(WIN, text="Kosher Rabanut", variable=kosher, value=2))
+    elements[-1].place(relx=0.4, rely=0.30)
+    elements.append(Radiobutton(WIN, text="Kosher Mehadrin", variable=kosher, value=3))
+    elements[-1].place(relx=0.4, rely=0.35)
     elements.append(Button(WIN, text="Upload image", command=lambda: upload_file()))
     elements[-1].place(relx=0.0, rely=0.43)
     elements.append(Label(WIN, text="Details: "))
@@ -348,7 +351,7 @@ def dinner():
     details = elements[-1].get("1.0", "end")
     elements.append(Button(WIN, text="Submit", width=10, height=2))
     elements[-1].place(relx=0.4, rely=0.80)
-
+    kosher.set(0)
 
 def open_user_win(username: str):
     try:
@@ -426,9 +429,10 @@ def home_page(window=None):
     WIN.title("Home Page")
     WIN.geometry("450x250")
     WIN.iconbitmap(os.path.join('icon', 'meal.ico'))
+    bg_photo('icon/bg.png',(450,250), WIN)
     if window is not None:
         window.destroy()
-    elements.append(Label(WIN, text="Welcome to our hackton project!", bg="gray", width=300, height=1,
+    elements.append(Label(WIN, text="Welcome to our hackton project!", bg="white", width=300, height=1,
                           font=("Calibri", 13)))
     elements[-1].pack()
     l = Label()
