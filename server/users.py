@@ -11,7 +11,6 @@ class User:
         self.type = type
 
 
-
     def getPass(self):
         return self.password
 

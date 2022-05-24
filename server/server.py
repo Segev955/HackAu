@@ -106,7 +106,13 @@ def rename_client(online: Online, newname: str):
     # onlines.remove(oldonline)
     # onlines.append(newonline)
 
-
+def send_meals():
+    m.load_from_json()
+    while True:
+        for meal in m.p.values():
+            broadcast(f"MEAL,{meal.id},{meal}")
+            time.sleep(0.1)
+        time.sleep(10)
 def client_communication(online: Online):
     """
     Thread to handle all messages from client
@@ -122,6 +128,7 @@ def client_communication(online: Online):
     broadcast(msg)  # broadcast welcome message
     print(f"Online users: {onlines}")
     client = onlines[get_online_index(name)].sock
+    Thread(target=send_meals).start()
     while True:  # wait for any messages from person
         msg = client.recv(BUFSIZ).decode("utf8")
         # time.sleep(1)
