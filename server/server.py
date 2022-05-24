@@ -176,7 +176,9 @@ def client_communication(online: Online):
         elif msg == "USERTOSTRING":
             if online.name in u.p.keys():
                 sendto(f"USERTOSTRING,{u.p[online]}", online.name)
-
+        elif msg =="GETMEALS":
+            m.load_from_json()
+            sendto(f"GETMEALS,{m.p}", online.name)
         else:
             print(f"Unknown Message: {msg}")
 

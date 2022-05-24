@@ -1,5 +1,6 @@
 import json
 
+
 #
 # class user_host:
 #     def __init__(self, username: str, gender: str):
@@ -39,26 +40,34 @@ import json
 #
 
 class Meal:
-    def __init__(self, host: str, title: str, date: tuple, time: tuple, address: str,capacity: int, guests= [], details=None, picture=None, kosher=None,id=-1):
+    def __init__(self, host: str, title: str, date: tuple, time: tuple, address: str, capacity: int, guests=[],
+                 details=None, picture=None, kosher=None, id=-1):
         self.host = host
         self.title = title
         self.date = date
         self.time = time
         self.address = address
-        self.capacity = capacity
+        self.capacity = int(capacity)
         self.guests = guests
         self.details = details
         self.picture = picture
         self.kosher = kosher
-        self.id=id
-    def setId(self,id):
-        self.id=id
+        self.id = id
+
+    def setId(self, id):
+        self.id = id
+
     def strdate(self):
         return f"{self.date[0]}/{self.date[1]}/{self.date[2]}"
+
     def strtime(self):
-        return f"{self.time[0]}:{self.time[1]}"
+        if self.time[1] < 10:
+            return f"{self.time[0]}:0{self.time[1]}"
+        else:
+            return f"{self.time[0]}:{self.time[1]}"
+
     def __repr__(self) -> str:
-        return f"meal: {self.title} address: {self.address},date: {self.strdate()}, {self.strtime()}"
+        return f"Meal: {self.title} | Address: {self.address}, | Date: {self.strdate()}, {self.strtime()}, Available: {self.capacity - len(self.guests)}"
 
     #
     # def accept(self, guest: user_guest):
@@ -67,20 +76,28 @@ class Meal:
     #     self.guests.append(guest)
     #     return True
 
+
 class Meals:
     def __init__(self):
         self.p = {}
+
     def load_from_json(self, file_name="meals.json"):
         with open(file_name) as f:
             dict = json.load(f)
-            for id,meal in dict.items():
-                self.p[meal[0]]=Meal(meal[1],meal[2],meal[3],meal[4],meal[5],meal[6],meal[7],meal[8],meal[9],meal[10],meal[0])
-    def save_to_json(self,meal:Meal, file_name="meals.json"):
+            for id, meal in dict.items():
+                self.p[meal[0]] = Meal(meal[1], meal[2], meal[3], meal[4], meal[5], meal[6], meal[7], meal[8], meal[9],
+                                       meal[10], meal[0])
+
+    def save_to_json(self, meal: Meal, file_name="meals.json"):
         with open(file_name) as f:
             j = json.load(f)
-        j[meal.id]=(meal.id,meal.host, meal.title, meal.date, meal.time, meal.address,meal.capacity,meal.guests,meal.details,meal.picture,meal.kosher)
+        j[meal.id] = (
+            meal.id, meal.host, meal.title, meal.date, meal.time, meal.address, meal.capacity, meal.guests,
+            meal.details,
+            meal.picture, meal.kosher)
         with open(file_name, 'w') as jf:
             json.dump(j, jf, indent=4, separators=(',', ': '))
+
     def newmeal(self, meal: Meal):
         # if meal.host == "":
         #     return False, "Please input Host."
@@ -100,11 +117,10 @@ class Meals:
             return False, "Please choose Hour."
         if meal.time[1] == -1:
             return False, "Please choose Minuets."
-        if meal.address =="":
+        if meal.address == "":
             return False, "Please choose Address."
-        meal.setId(len(self.p)+1)
+        meal.setId(len(self.p) + 1)
         print(meal.id)
-        self.p[meal.id]=meal
+        self.p[meal.id] = meal
         self.save_to_json(meal)
         return True, f'{meal.title} meal added successfully!'
-

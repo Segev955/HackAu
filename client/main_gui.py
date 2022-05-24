@@ -8,6 +8,8 @@ from tkinter import ttk, scrolledtext
 import datetime as dt
 import webbrowser
 from tkinter.filedialog import askopenfile
+
+import tkintermapview as tkintermapview
 from PIL import Image, ImageTk
 
 from client import Client
@@ -122,7 +124,10 @@ def check_meal(title: str, date: tuple, mtime: tuple, address: str, kosher: int,
 
 
 def submit_meal(title: str, date, mtime, address: str, kosher: int, details, capacity):
-    f, msg = check_meal(title,  f"{date[2]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details, capacity)
+    f, msg = check_meal(title, f"{date[0]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details,
+                        capacity)
+    f, msg = check_meal(title, f"{date[2]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details,
+                        capacity)
     if f:
         tkinter.messagebox.showinfo(message=msg)
         open_user_win(CLIENT.name)
@@ -332,7 +337,7 @@ def dinner():
     # l1 = Label(WIN, image=bg)
     # l1.place(x=0, y=0)
     # Var:
-    bg_photo('icon/table_plates_cuttlery.jpg',(500,700), WIN)
+    bg_photo('icon/table_plates_cuttlery.jpg', (500, 700), WIN)
     title = StringVar()
     day = IntVar()
     month = IntVar()
@@ -341,6 +346,10 @@ def dinner():
     hour = IntVar()
     address = StringVar()
     kosher = IntVar()
+    vegan = IntVar()
+    vegan.set(0)
+    vegetarian = IntVar()
+    vegetarian.set(0)
     capacity = IntVar()
     details = StringVar()
 
@@ -378,6 +387,11 @@ def dinner():
     elements[-1].place(relx=0.4, rely=0.30)
     elements.append(Radiobutton(WIN, text="Kosher Mehadrin", variable=kosher, value=3))
     elements[-1].place(relx=0.4, rely=0.35)
+    elements.append(Checkbutton(WIN, text='Vegan friendly', variable=vegan))
+    elements[-1].place(relx=0.2, rely=0.4)
+    elements.append(Checkbutton(WIN, text='Vegetarian friendly', variable=vegetarian))
+    elements[-1].place(relx=0.2, rely=0.44)
+
     elements.append(Button(WIN, text="Upload image", command=lambda: upload_file()))
     elements[-1].place(relx=0.0, rely=0.43)
     elements.append(Label(WIN, text="Details: "))
@@ -410,8 +424,31 @@ def open_user_win(username: str):
         guest_screen()
     return (True, f"Welcome to {username} window.")
 
+
+def getmeals(msg: str):
+    return (msg[-1][10:-3].split('*'))
+
+
+def mapview():
+    WIN2 = Toplevel(WIN)
+    WIN2.title('MAP')
+    WIN2.geometry("900x700")
+    myl = LabelFrame(WIN2)
+    myl.pack()
+    mypos = 32.15639816126124, 34.80522162553965
+    kfarsaba = 32.17743353801066, 34.92948100714868
+    maps = tkintermapview.TkinterMapView(myl, width=800, height=600, corner_radius=0)
+    maps.pack()
+    maps.set_position(mypos[0], mypos[1], marker=True)
+    maps.set_zoom(15)
+    # maps.set_address("Microsoft Israel R&D Center")
+    # WIN2.mainloop()
+
+
 def getMeals():
     pass
+
+
 def guest_screen():
     destroy_elements(elements)
     WIN.geometry("450x250")
@@ -420,36 +457,34 @@ def guest_screen():
     elements.append(Label(WIN, text=f"Welcome {CLIENT.name}", bg="gray", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
 
-    meals=[]
+    meals = []
 
     def pushMeal():
         # msgST = scrolledtext.ScrolledText(WIN)
         # elements.append(msgST)
-        name=CLIENT.name
+        name = CLIENT.name
         # msgST.pack()
         # msgST.config(state='disabled')
-        while name==CLIENT.name:
-            msg=CLIENT.get_messages()[-1]
-            if msg is not None and len(msg) != 0 and msg.split(',')[0] == 'MEAL' and int(msg.split(',')[1]) not in meals:
+        print("start")
+        while name == CLIENT.name:
+            msg = CLIENT.get_messages()[-1]
+            if msg is not None and len(msg) != 0 and msg.split(',')[0] == 'MEAL' and int(
+                    msg.split(',')[1]) not in meals:
                 # msgST.config(state='normal')
                 # msgST.insert('end',f"{str(msg[7:])}\n")
                 # msgST.yview('end')
                 # msgST.config(state='disabled')
                 # meals.append(int(msg.split(',')[1]))
-                elements.append(Button(text=f"{msg[7:]}\n"))
+                elements.append(Button(text=f"{msg[7:]}\n", command=lambda: mapview()))
                 elements[-1].pack()
                 meals.append(int(msg.split(',')[1]))
 
     Thread(target=pushMeal).start()
 
-
-
-
-    # CLIENT.send_message('USERTOSTRING')
-    # msg = CLIENT.get_messages()
-    # while len(msg) == 0 or msg[-1].split(',')[0] != 'USERTOSTRING':
-    #     msg = CLIENT.get_messages()
-    # Label(screen, text=msg[-1].split(',')[1]).pack()
+    # elements.append(Button(text="MAP", command=lambda: mapview()))
+    # elements[-1].pack()
+    # elements.append(Button(text="Rate last meal"))
+    # elements[-1].pack()
 
 
 def host_screen():
@@ -459,8 +494,9 @@ def host_screen():
     create_menu_bar(WIN)
     elements.append(Label(WIN, text=f"Welcome {CLIENT.name}", bg="gray", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
-    elements.append(Button(text="create new meal", command=lambda: dinner()))
+    elements.append(Button(text="Create new meal", command=lambda: dinner()))
     elements[-1].pack()
+
     # CLIENT.send_message('USERTOSTRING')
     # msg = CLIENT.get_messages()
     # while len(msg) == 0 or msg[-1].split(',')[0] != 'USERTOSTRING':
@@ -486,7 +522,8 @@ def isClientConnected(window, label, relx=0, rely=0, relwidth=0.1):
     while True:
         if CLIENT.isconnected:
             l = Label(window, text="online", bg="green", width=350, height=1, font=("Calibri", 13)).place(relx=relx,
-                                                                                                          rely=rely,                                                                                                relwidth=relwidth)
+                                                                                                          rely=rely,
+                                                                                                          relwidth=relwidth)
         else:
             l = Label(window, text="offline", bg="red", width=350, height=1, font=("Calibri", 13)).place(relx=relx,
                                                                                                          rely=rely,
@@ -500,7 +537,7 @@ def home_page(window=None):
     WIN = Tk()
     WIN.title("Home Page")
     WIN.geometry("450x250")
-    bg_photo('icon/bg.png',(450,250), WIN)
+    bg_photo('icon/bg.png', (450, 250), WIN)
     WIN.iconbitmap(os.path.join('icon', 'meal.ico'))
     if window is not None:
         window.destroy()

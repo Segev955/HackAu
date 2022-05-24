@@ -3,6 +3,7 @@ import time
 from socket import AF_INET, socket, SOCK_STREAM, SOCK_DGRAM
 from threading import Thread
 
+
 class Client:
     """
     for communication with server
@@ -14,16 +15,16 @@ class Client:
     PORT = 55000
     ADDR = (HOST, PORT)
     BUFSIZ = 1024
-    def __init__(self,name="HOME"):
+
+    def __init__(self, name="HOME"):
         """
         Init object and send name to server
         :param name: str
         """
-        self.name=name
-        self.isconnected=False
+        self.name = name
+        self.isconnected = False
         tcp_thread = Thread(target=self.tcp_connection)
         tcp_thread.start()
-
 
         # self.lock = Lock()
 
@@ -47,10 +48,9 @@ class Client:
                 except:
                     pass
 
-
-
-    def acceptUser(self,flag,msg):
+    def acceptUser(self, flag, msg):
         pass
+
     def receive_messages(self):
         """
         receive messages from server
@@ -60,12 +60,12 @@ class Client:
             if self.isconnected:
                 try:
                     msg = self.client_socket.recv(self.BUFSIZ).decode('utf-8')
-                    sp=[]
+                    sp = []
                     print(f"{self.name} received message: {msg}")
                     try:
-                        sp=msg.split(',')
-                        if sp[0] =="RENAME":
-                            self.name=sp[1]
+                        sp = msg.split(',')
+                        if sp[0] == "RENAME":
+                            self.name = sp[1]
                             print(f"Client Name changed to {self.name}")
                     except:
                         pass
@@ -112,7 +112,7 @@ class Client:
             self.send_message("{quit}")
         except:
             print("The Server is crushed.")
-        self.isconnected=False
+        self.isconnected = False
         self.client_socket.close()
 
 # cl=Client("HOME")
