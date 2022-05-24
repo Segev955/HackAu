@@ -39,7 +39,8 @@ import json
 #
 
 class Meal:
-    def __init__(self, host: str, title: str, date: tuple, time: tuple, address: str,capacity: int, guests= [], details=None, picture=None, kosher=None):
+    def __init__(self, host: str, title: str, date: tuple, time: tuple, address: str,capacity: int, guests= [], details=None, picture=None, kosher=None ,
+                 vegan_friendly=None, vegetarian_friendly = None):
         self.host = host
         self.title = title
         self.date = date
@@ -50,6 +51,8 @@ class Meal:
         self.details = details
         self.picture = picture
         self.kosher = kosher
+        self.vegan_friendly= vegan_friendly
+        self.vegeterian_friendly= vegetarian_friendly
 
     #
     # def accept(self, guest: user_guest):
@@ -64,7 +67,7 @@ class Meals:
     def save_to_json(self,meal:Meal, file_name="meals.json"):
         with open(file_name) as f:
             j = json.load(f)
-        j.append((meal.host, meal.title, meal.date, meal.time, meal.address,meal.capacity,meal.guests,meal.details,meal.picture,meal.kosher))
+        j.append((meal.host, meal.title, meal.date, meal.time, meal.address,meal.capacity,meal.guests,meal.details,meal.picture,meal.kosher, meal.vegan_friendly, meal.vegeterian_friendly))
         with open(file_name, 'w') as jf:
             json.dump(j, jf, indent=4, separators=(',', ': '))
     def newmeal(self, meal: Meal):
