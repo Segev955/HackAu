@@ -268,7 +268,7 @@ def connect():
     username = StringVar()
     password = StringVar()
 
-    elements.append(Label(WIN, text="Log in Form", bg="white", width=300, height=1,
+    elements.append(Label(WIN, text="Log In Form", bg="white", width=300, height=1,
                           font=("Calibri", 15)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
@@ -341,8 +341,13 @@ def dinner():
     hour = IntVar()
     address = StringVar()
     kosher = IntVar()
+    vegan = IntVar()
+    vegan.set(0)
+    vegetarian = IntVar()
+    vegetarian.set(0)
     capacity = IntVar()
     details = StringVar()
+
 
     # Elements:
     elements.append(Label(WIN, text="Submit dinner", bg="white", width=300, height=1,
@@ -378,13 +383,18 @@ def dinner():
     elements[-1].place(relx=0.4, rely=0.30)
     elements.append(Radiobutton(WIN, text="Kosher Mehadrin", variable=kosher, value=3))
     elements[-1].place(relx=0.4, rely=0.35)
+    elements.append(Checkbutton(WIN, text='Vegan friendly',  variable=vegan))
+    elements[-1].place(relx=0.2, rely=0.4)
+    elements.append(Checkbutton(WIN, text='Vegetarian friendly', variable=vegetarian))
+    elements[-1].place(relx=0.2, rely=0.44)
+
     elements.append(Button(WIN, text="Upload image", command=lambda: upload_file()))
-    elements[-1].place(relx=0.0, rely=0.43)
+    elements[-1].place(relx=0.0, rely=0.49)
     elements.append(Label(WIN, text="Details: "))
-    elements[-1].place(relx=0.0, rely=0.50)
+    elements[-1].place(relx=0.0, rely=0.54)
     text = Text(WIN, height=8, width=45)
     elements.append(text)
-    elements[-1].place(relx=0.15, rely=0.50)
+    elements[-1].place(relx=0.15, rely=0.54)
 
     elements.append(
         Button(WIN, text="Submit", width=10, height=2,
