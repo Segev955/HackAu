@@ -4,7 +4,7 @@ import time
 import tkinter.messagebox
 from threading import Thread
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, scrolledtext
 import datetime as dt
 import webbrowser
 from tkinter.filedialog import askopenfile
@@ -122,7 +122,7 @@ def check_meal(title: str, date: tuple, mtime: tuple, address: str, kosher: int,
 
 
 def submit_meal(title: str, date, mtime, address: str, kosher: int, details, capacity):
-    f, msg = check_meal(title,  f"{date[0]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details, capacity)
+    f, msg = check_meal(title,  f"{date[2]}.{date[0]}.{date[1]}", f'{mtime[0]}.{mtime[1]}', address, kosher, details, capacity)
     if f:
         tkinter.messagebox.showinfo(message=msg)
         open_user_win(CLIENT.name)
@@ -268,7 +268,7 @@ def connect():
     username = StringVar()
     password = StringVar()
 
-    elements.append(Label(WIN, text="Log In Form", bg="white", width=300, height=1,
+    elements.append(Label(WIN, text="Log in Form", bg="white", width=300, height=1,
                           font=("Calibri", 15)))
     elements[-1].pack()
     elements.append(Label(WIN, text="Username: "))
@@ -341,13 +341,8 @@ def dinner():
     hour = IntVar()
     address = StringVar()
     kosher = IntVar()
-    vegan = IntVar()
-    vegan.set(0)
-    vegetarian = IntVar()
-    vegetarian.set(0)
     capacity = IntVar()
     details = StringVar()
-
 
     # Elements:
     elements.append(Label(WIN, text="Submit dinner", bg="white", width=300, height=1,
@@ -383,18 +378,13 @@ def dinner():
     elements[-1].place(relx=0.4, rely=0.30)
     elements.append(Radiobutton(WIN, text="Kosher Mehadrin", variable=kosher, value=3))
     elements[-1].place(relx=0.4, rely=0.35)
-    elements.append(Checkbutton(WIN, text='Vegan friendly',  variable=vegan))
-    elements[-1].place(relx=0.2, rely=0.4)
-    elements.append(Checkbutton(WIN, text='Vegetarian friendly', variable=vegetarian))
-    elements[-1].place(relx=0.2, rely=0.44)
-
     elements.append(Button(WIN, text="Upload image", command=lambda: upload_file()))
-    elements[-1].place(relx=0.0, rely=0.49)
+    elements[-1].place(relx=0.0, rely=0.43)
     elements.append(Label(WIN, text="Details: "))
-    elements[-1].place(relx=0.0, rely=0.54)
+    elements[-1].place(relx=0.0, rely=0.50)
     text = Text(WIN, height=8, width=45)
     elements.append(text)
-    elements[-1].place(relx=0.15, rely=0.54)
+    elements[-1].place(relx=0.15, rely=0.50)
 
     elements.append(
         Button(WIN, text="Submit", width=10, height=2,
@@ -420,7 +410,8 @@ def open_user_win(username: str):
         guest_screen()
     return (True, f"Welcome to {username} window.")
 
-
+def getMeals():
+    pass
 def guest_screen():
     destroy_elements(elements)
     WIN.geometry("450x250")
@@ -428,6 +419,32 @@ def guest_screen():
     create_menu_bar(WIN)
     elements.append(Label(WIN, text=f"Welcome {CLIENT.name}", bg="gray", width=300, height=1, font=("Calibri", 13)))
     elements[-1].pack()
+
+    meals=[]
+
+    def pushMeal():
+        # msgST = scrolledtext.ScrolledText(WIN)
+        # elements.append(msgST)
+        name=CLIENT.name
+        # msgST.pack()
+        # msgST.config(state='disabled')
+        while name==CLIENT.name:
+            msg=CLIENT.get_messages()[-1]
+            if msg is not None and len(msg) != 0 and msg.split(',')[0] == 'MEAL' and int(msg.split(',')[1]) not in meals:
+                # msgST.config(state='normal')
+                # msgST.insert('end',f"{str(msg[7:])}\n")
+                # msgST.yview('end')
+                # msgST.config(state='disabled')
+                # meals.append(int(msg.split(',')[1]))
+                elements.append(Button(text=f"{msg[7:]}\n"))
+                elements[-1].pack()
+                meals.append(int(msg.split(',')[1]))
+
+    Thread(target=pushMeal).start()
+
+
+
+
     # CLIENT.send_message('USERTOSTRING')
     # msg = CLIENT.get_messages()
     # while len(msg) == 0 or msg[-1].split(',')[0] != 'USERTOSTRING':
